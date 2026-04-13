@@ -4,9 +4,9 @@ protocol ScriptGeneratorServiceProtocol {
     func generate(topic: String, style: VideoStyle, duration: VideoDuration) async throws -> ScriptResult
 }
 
-final class ScriptGeneratorService: ScriptGeneratorServiceProtocol {
+final class MockScriptGeneratorService: ScriptGeneratorServiceProtocol {
     func generate(topic: String, style: VideoStyle, duration: VideoDuration) async throws -> ScriptResult {
-        return ScriptResult(
+        ScriptResult(
             titles: [
                 "关于\(topic)，这条内容建议你直接发",
                 "\(topic)：一个更容易起流量的表达方式",
@@ -25,5 +25,23 @@ final class ScriptGeneratorService: ScriptGeneratorServiceProtocol {
             ],
             tags: ["#短视频", "#文案", "#\(topic)"]
         )
+    }
+}
+
+final class RemoteScriptGeneratorService: ScriptGeneratorServiceProtocol {
+    private let apiClient: APIClient
+
+    init(apiClient: APIClient = APIClient()) {
+        self.apiClient = apiClient
+    }
+
+    func generate(topic: String, style: VideoStyle, duration: VideoDuration) async throws -> ScriptResult {
+        try await apiClient.generateScript(topic: topic, style: style, duration: duration)
+    }
+}
+
+enum ScriptGeneratorFactory {
+    static func make(environment: AppEnvironment = .current) -> ScriptGeneratorServiceProtocol {
+        environment.usesMockGenerator ? MockScriptGeneratorService() : RemoteScriptGeneratorService()
     }
 }

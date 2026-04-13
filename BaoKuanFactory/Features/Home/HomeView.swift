@@ -14,7 +14,16 @@ struct HomeView: View {
 
                 DurationSelectorView(selectedDuration: $viewModel.selectedDuration)
 
-                PrimaryButton(title: "立即生成", action: viewModel.generate)
+                PrimaryButton(
+                    title: viewModel.isLoading ? "生成中..." : "立即生成",
+                    isDisabled: viewModel.isGenerateDisabled,
+                    action: viewModel.generate
+                )
+
+                if viewModel.isLoading {
+                    ProgressView("正在生成文案...")
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
 
                 RecentHistorySection(items: Array(viewModel.recentHistory.prefix(3)))
             }
